@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Playpen+Sans:wght@100..800&display=swap');
+@import "tailwindcss";
+
+
+body{
+    background-image: linear-gradient(60deg, #abecd6 0%, #fbed96 100%);
+    min-height: 100vh;
+
+}
+
+.playpen-sans{
+  font-family: "Playpen Sans", cursive;
+  font-optical-sizing: auto;
+
+}
