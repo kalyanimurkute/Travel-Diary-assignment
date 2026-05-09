@@ -3,53 +3,147 @@ import axios from "axios";
 import { getuserJwtToken } from "../utils";
 import TourCard from "../components/TourCard";
 import Navbar from "../components/Navbar";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 function Wishlist() {
+
   const [tours, setTours] = useState([]);
+
   const token = getuserJwtToken();
 
+  // ================= FETCH WISHLIST =================
+
   const fetchWishlist = async () => {
+
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/wishlist`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTours(res.data.data);
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/wishlist`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        setTours(res.data.data);
+      }
+
     } catch (err) {
+
       console.log(err);
+
       toast.error("Failed to fetch wishlist");
     }
   };
 
   useEffect(() => {
-    fetchWishlist();
+
+    if (token) {
+      fetchWishlist();
+    }
+
   }, []);
 
+  // ================= REMOVE FROM UI =================
+
   const handleRemoveFromWishlist = (id) => {
-    setTours(prev => prev.filter(tour => tour._id !== id)); // UI update
-    toast.success("Tour removed from wishlist"); // Show message
+
+    setTours((prev) =>
+      prev.filter((tour) => tour._id !== id)
+    );
+
+    toast.success("Removed from wishlist");
+  };
+
+  // ================= DELETE TOUR =================
+
+  const deleteTour = async (id) => {
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this tour?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/tours/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+
+        setTours((prev) =>
+          prev.filter((tour) => tour._id !== id)
+        );
+
+        toast.success("Tour deleted successfully");
+
+      } else {
+
+        toast.error(response.data.message);
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error("Failed to delete tour");
+    }
   };
 
   return (
-    <div>
+
+    <div className="min-h-screen bg-[#FFF4E0]">
+
       <Navbar />
-      <div className="p-5">
-        <h2 className="text-2xl mb-6 playpen-sans text-center">Favorite Tours</h2>
+
+      <div className="max-w-6xl mx-auto p-5">
+
+        <h2 className="text-3xl text-center playpen-sans text-[#B95E82] mb-8">
+          Favorite Tours ❤️
+        </h2>
 
         {tours.length === 0 ? (
-          <p className="text-gray-500 text-center">No tours in wishlist</p>
+
+          <div className="text-center mt-20">
+
+            <p className="text-[#B95E82] text-lg">
+              No tours in wishlist
+            </p>
+
+          </div>
+
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {tours.map(tour => (
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {tours.map((tour) => (
+
               <TourCard
                 key={tour._id}
                 {...tour}
-                onRemoveFromWishlist={handleRemoveFromWishlist} // ✅ pass callback
+                onRemoveFromWishlist={handleRemoveFromWishlist}
+                onDelete={deleteTour}
               />
+
             ))}
+
           </div>
+
         )}
+
       </div>
+
+      <Toaster position="top-center" />
+
     </div>
   );
 }

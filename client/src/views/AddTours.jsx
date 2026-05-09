@@ -1,11 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
-import { setPageTitle, getuserJwtToken } from "./../utils.jsx";
-import Navbar from '../components/Navbar';
-import Input from '../components/Input.jsx';
-import MultiSelect from '../components/MultiSelect.jsx';
-import Button from '../components/Button.jsx';
-import axios from 'axios';
-import toast, { Toaster } from "react-hot-toast";
+import { useState, useRef } from "react";
+
+import Navbar from "../components/Navbar";
+import Input from "../components/Input.jsx";
+import MultiSelect from "../components/Select.jsx";
+import Button from "../components/Button.jsx";
+import PhotoViewer from "../components/Viewer.jsx";
+
+import axios from "axios";
+
+import toast, {
+  Toaster,
+} from "react-hot-toast";
+
 import {
   ImageKitAbortError,
   ImageKitInvalidRequestError,
@@ -13,220 +19,611 @@ import {
   ImageKitUploadNetworkError,
   upload,
 } from "@imagekit/react";
-import PhotoViewer from "./../components/PhotoViewer.jsx"
 
+import {
+  getuserJwtToken,
+} from "../utils.jsx";
 
 function NewTour() {
-  const [newTour, setNewTour] = useState({
-    "title": "",
-    "description": "",
-    "cities": [],
-    "startDate": "",
-    "endDate": "",
-    "photos": []
-  });
-  const [progress, setProgress] = useState(0);
+
+  const API_URL =
+    import.meta.env.VITE_API_BASE_URL;
+
+  const [newTour, setNewTour] =
+    useState({
+      title: "",
+      description: "",
+      cities: [],
+      startDate: "",
+      endDate: "",
+      photos: [],
+    });
+
+  const [progress, setProgress] =
+    useState(0);
+
   const fileInputRef = useRef();
 
+  // ================= AUTH =================
+
   const authenticator = async () => {
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Request failed with status ${response.status}: ${errorText}`);
+
+      const res = await fetch(`${API_URL}/auth`);
+
+      if (!res.ok) {
+        throw new Error("Auth failed");
       }
-      const data = await response.json();
-      const { signature, expire, token, publicKey } = data;
-      return { signature, expire, token, publicKey };
+
+      return await res.json();
+
     } catch (error) {
-      console.error("Authentication error:", error);
-      throw new Error("Authentication request failed");
+
+      console.error(error);
+
+      toast.error(
+        "Authentication Failed"
+      );
+
+      throw error;
     }
   };
+
+  // ================= HANDLE UPLOAD =================
+
   const handleUpload = async () => {
 
-    const fileInput = fileInputRef.current;
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-      alert("Please select a file to upload");
-      return;
-    }
-    const file = fileInput.files[0];
+    const fileInput =
+      fileInputRef.current;
 
-    let authParams;
-    try {
-      authParams = await authenticator();
-    } catch (authError) {
-      console.error("Failed to authenticate for upload:", authError);
+    if (!fileInput.files.length) {
+
+      toast.error(
+        "Please select photo"
+      );
+
       return;
     }
-    const { signature, expire, token, publicKey, } = authParams;
+
+    const file =
+      fileInput.files[0];
+
     try {
-      const uploadResponse = await upload({
+
+      const authParams = await authenticator();
+
+      if (!authParams.signature) {
+        toast.error("Auth failed");
+        return;
+      }
+
+      const {
+        signature,
         expire,
         token,
-        signature,
         publicKey,
-        file,
-        fileName: file.name,
-        onProgress: (event) => {
-          setProgress((event.loaded / event.total) * 100);
-        },
-      });
+      } = authParams;
 
-      setNewTour({
-        ...newTour,
-        photos: [...newTour.photos, uploadResponse.url],
-      });
+      const uploadResponse =
+        await upload({
+
+          expire,
+          token,
+          signature,
+          publicKey,
+
+          file,
+
+          fileName:
+            file.name,
+
+          onProgress: (event) => {
+
+            setProgress(
+              (
+                event.loaded /
+                event.total
+              ) * 100
+            );
+          },
+        });
+
+      setNewTour((prev) => ({
+        ...prev,
+
+        photos: [
+          ...prev.photos,
+          uploadResponse.url,
+        ],
+      }));
+
+      toast.success(
+        "Photo Uploaded"
+      );
 
       setProgress(0);
+
       fileInput.value = "";
+
     } catch (error) {
-      console.log(error)
-      if (error instanceof ImageKitAbortError) {
-        console.error("Upload aborted:", error.reason);
-      } else if (error instanceof ImageKitInvalidRequestError) {
-        console.error("Invalid request:", error.message);
-      } else if (error instanceof ImageKitUploadNetworkError) {
-        console.error("Network error:", error.message);
-      } else if (error instanceof ImageKitServerError) {
-        console.error("Server error:", error.message);
+
+      console.log(error);
+
+      if (
+        error instanceof
+        ImageKitAbortError
+      ) {
+
+        toast.error(
+          "Upload aborted"
+        );
+
+      } else if (
+        error instanceof
+        ImageKitInvalidRequestError
+      ) {
+
+        toast.error(
+          "Invalid request"
+        );
+
+      } else if (
+        error instanceof
+        ImageKitUploadNetworkError
+      ) {
+
+        toast.error(
+          "Network error"
+        );
+
+      } else if (
+        error instanceof
+        ImageKitServerError
+      ) {
+
+        toast.error(
+          "Server error"
+        );
+
       } else {
-        console.error("Upload error:", error);
+
+        toast.error(
+          "Upload failed"
+        );
       }
     }
   };
 
-  const addTour = async () => {
-    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/tours`, newTour, {
-      headers: {
-        Authorization: `Bearer ${getuserJwtToken()}`,
-      }
-    });
-    console.log(response.data);
-    if (response.data.success) {
-      toast.success(response.data.message);
-    } else {
-      toast.error("failed to add the tours");
-    };
-  }
+  // ================= ADD TOUR =================
 
-  useEffect(() => {
-    setPageTitle("New Tour - TinyTours");
-  }, []);
+  const addTour = async () => {
+
+    if (
+      !newTour.title ||
+      !newTour.description
+    ) {
+
+      toast.error(
+        "Please fill all fields"
+      );
+
+      return;
+    }
+
+    try {
+
+      const response =
+        await axios.post(
+
+          `${API_URL}/tours`,
+
+          newTour,
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${getuserJwtToken()}`,
+            },
+          }
+        );
+
+      if (
+        response.data.success
+      ) {
+
+        toast.success(
+          "Tour Added Successfully"
+        );
+
+        setNewTour({
+          title: "",
+          description: "",
+          cities: [],
+          startDate: "",
+          endDate: "",
+          photos: [],
+        });
+
+      } else {
+
+        toast.error(
+          "Failed to Add Tour"
+        );
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (error.response) {
+
+        toast.error(
+          error.response.data.message
+        );
+
+      } else if (
+        error.request
+      ) {
+
+        toast.error(
+          "No response from server"
+        );
+
+      } else {
+
+        toast.error(
+          "Something went wrong"
+        );
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen">
+
+    <div
+      className="
+        min-h-screen
+
+        bg-gradient-to-br
+        from-[#FFECC0]
+        via-[#fff4da]
+        to-[#FFC29B]
+
+        pb-10
+      "
+    >
+
       <Navbar />
-      <h1 className='text-center mt-10 playpen-sans text-xl'>Let's Add a New Travel Story</h1>
-      <div className='w-85 block mx-auto my-3'>
-        <Input type="text"
+
+      {/* ================= TITLE ================= */}
+
+      <h1
+        className="
+          text-center
+          mt-10
+
+          text-3xl
+
+          playpen-sans
+
+          text-[#B95E82]
+
+          font-semibold
+        "
+      >
+
+        Add Your Travel Story
+
+      </h1>
+
+      {/* ================= FORM ================= */}
+
+      <div
+        className="
+          w-[90%]
+          md:w-[500px]
+
+          mx-auto
+
+          mt-8
+
+          bg-white/80
+
+          backdrop-blur-md
+
+          border
+          border-[#FFC29B]
+
+          rounded-3xl
+
+          shadow-2xl
+
+          p-8
+        "
+      >
+
+        {/* ================= TITLE ================= */}
+
+        <Input
+          type="text"
           placeholder="Enter Title..."
           value={newTour.title}
-          onChange={(e) => {
+
+          onChange={(e) =>
             setNewTour({
               ...newTour,
-              title: e.target.value,
-
+              title:
+                e.target.value,
             })
-          }}
+          }
         />
-        <Input type="text"
-          placeholder="Enter Discription..."
+
+        {/* ================= DESCRIPTION ================= */}
+
+        <Input
+          type="text"
+          placeholder="Enter Description..."
           value={newTour.description}
-          onChange={(e) => {
+
+          onChange={(e) =>
             setNewTour({
               ...newTour,
-              description: e.target.value,
-
+              description:
+                e.target.value,
             })
-          }}
+          }
         />
+
+        {/* ================= CITIES ================= */}
 
         <MultiSelect
-          selectedItems={newTour.cities}
-          placeholder={"Enter Cities..."}
-          onAddItem={(val) => {
-            setNewTour({
-              ...newTour,
-              cities: [...newTour.cities, val]
-            });
-          }}
-          onRemoveItem={(val) => {
-            setNewTour({
-              ...newTour,
-              cities: newTour.cities.filter((city) => city !== val),
-            });
-          }}
-        />
-        <div className='flex gap-2'>
-        <Input type="date"
-          placeholder="Enter Start Date..."
-          value={newTour.startDate}
-          onChange={(e) => {
-            setNewTour({
-              ...newTour,
-              startDate: e.target.value,
+          selectedItems={
+            newTour.cities
+          }
 
+          placeholder="Enter Cities..."
+
+          onAddItem={(val) =>
+            setNewTour({
+              ...newTour,
+
+              cities: [
+                ...newTour.cities,
+                val,
+              ],
             })
-          }}
-        />
-        <Input type="date"
-          placeholder="Enter End Date..."
-          value={newTour.endDate}
-          onChange={(e) => {
+          }
+
+          onRemoveItem={(val) =>
             setNewTour({
               ...newTour,
-              endDate: e.target.value,
 
+              cities:
+                newTour.cities.filter(
+                  (city) =>
+                    city !== val
+                ),
             })
-          }}
+          }
         />
-        </div>
-        <div className="flex gap-2 grid grid-cols-3 gap-3">
-          {newTour.photos.map((photo, index) => (
-            <PhotoViewer
-              key={index}
-              imgUrl={photo}
-              showDelete
-              onDelete={(url) =>
-                setNewTour((prev) => ({
-                  ...prev,
-                  photos: prev.photos.filter((p) => p !== url),
-                }))
-              }
-            />
-          ))}
-        </div>
-       <div className="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center hover:bg-purple-50 transition">
-        <p className="text-gray-500 mb-2">📸 Upload Photos</p>
 
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="cursor-pointer"
-          onChange={(e) => {
-            if (e.target.files.length > 0) {
-              handleUpload();
+        {/* ================= DATES ================= */}
+
+        <div className="flex gap-3">
+
+          <Input
+            type="date"
+
+            value={
+              newTour.startDate
             }
-          }}
-        />
 
-        {progress > 0 && (
-          <div className="mt-3 text-sm text-purple-600">
-            Uploading... {Math.round(progress)}%
-          </div>
-        )}
+            onChange={(e) =>
+              setNewTour({
+                ...newTour,
+
+                startDate:
+                  e.target.value,
+              })
+            }
+          />
+
+          <Input
+            type="date"
+
+            value={
+              newTour.endDate
+            }
+
+            onChange={(e) =>
+              setNewTour({
+                ...newTour,
+
+                endDate:
+                  e.target.value,
+              })
+            }
+          />
+
+        </div>
+
+        {/* ================= PHOTOS ================= */}
+
+        <div
+          className="
+            grid
+            grid-cols-3
+            gap-3
+            mt-5
+          "
+        >
+
+          {newTour.photos.map(
+            (
+              photo,
+              index
+            ) => (
+
+              <PhotoViewer
+                key={index}
+                imgUrl={photo}
+
+                showDelete
+
+                onDelete={(url) =>
+                  setNewTour(
+                    (prev) => ({
+                      ...prev,
+
+                      photos:
+                        prev.photos.filter(
+                          (p) =>
+                            p !== url
+                        ),
+                    })
+                  )
+                }
+              />
+            )
+          )}
+
+        </div>
+
+        {/* ================= FILE UPLOAD ================= */}
+
+        <div
+          className="
+            mt-6
+
+            border-2
+            border-dashed
+            border-[#F39F9F]
+
+            bg-[#FFECC0]/50
+
+            rounded-2xl
+
+            p-6
+
+            text-center
+          "
+        >
+
+          <p
+            className="
+              text-[#B95E82]
+              font-medium
+              mb-3
+            "
+          >
+
+            Upload Tour Photos
+
+          </p>
+
+          <input
+            type="file"
+
+            ref={fileInputRef}
+
+            className="
+              cursor-pointer
+
+              text-sm
+
+              text-[#5A3444]
+            "
+
+            onChange={(e) => {
+
+              if (
+                e.target.files.length > 0
+              ) {
+
+                handleUpload();
+              }
+            }}
+          />
+
+          {/* ================= PROGRESS ================= */}
+
+          {
+            progress > 0 && (
+
+              <div className="mt-4">
+
+                <div
+                  className="
+                    w-full
+                    h-3
+
+                    bg-[#FFECC0]
+
+                    rounded-full
+
+                    overflow-hidden
+                  "
+                >
+
+                  <div
+                    className="
+                      h-full
+
+                      bg-[#B95E82]
+
+                      transition-all
+                    "
+                    style={{
+                      width:
+                        `${progress}%`,
+                    }}
+                  />
+
+                </div>
+
+                <p
+                  className="
+                    text-sm
+                    mt-2
+
+                    text-[#B95E82]
+                  "
+                >
+
+                  Uploading...
+                  {" "}
+                  {Math.round(
+                    progress
+                  )}%
+
+                </p>
+
+              </div>
+            )
+          }
+
+        </div>
+
+        {/* ================= BUTTON ================= */}
+
+        <div className="mt-8 text-center">
+
+          <Button
+            title="Add Tour"
+            variant="primary"
+            size="large"
+            onClick={addTour}
+          />
+
+        </div>
+
       </div>
-      </div>
-      <div className='w-80 block mx-auto mt-10'>
-        <Button title="Add Tour"
-          varient='primary'
-          size='large'
-          onClick={addTour}
-        />
-      </div>
+
       <Toaster />
+
     </div>
-  )
+  );
 }
 
-export default NewTour
+export default NewTour;

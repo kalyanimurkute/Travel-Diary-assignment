@@ -1,52 +1,111 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import connectDB from './db.js';
-import { checkJWT } from './middlewares/jwt.js';
-import { getHome, getHealth } from './controllers/health.js';
-import { postSignup, postLogin } from './controllers/auth.js';
-import { getTours, postTour, putTours, getTourById, deleteTour, addToWishlist, removeFromWishlist, getWishlist } from './controllers/tours.js';
-import ImageKit from "@imagekit/nodejs";
-import { getUser, updateUser } from './controllers/user.js';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
+dotenv.config();
+
+import connectDB from "./db.js";
+
+import { checkJWT } from "./middlewares/jwt.js";
+
+import { getHome, getHealth } from "./controllers/health.js";
+
+import { postSignup, postLogin } from "./controllers/auth.js";
+
+import {
+  getTours,
+  postTour,
+  putTours,
+  getTourById,
+  deleteTour,
+  addToWishlist,
+  removeFromWishlist,
+  getWishlist,
+} from "./controllers/tours.js";
+
+import ImageKit from "@imagekit/nodejs";
+
+import { getUser, updateUser } from "./controllers/user.js";
 
 const app = express();
-dotenv.config();
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173",
+}));
+
 app.use(express.json());
+
 const PORT = process.env.PORT || 8080;
 
+// ================= IMAGEKIT =================
+
 const client = new ImageKit({
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
 });
 
+// ================= ROUTES =================
 
+app.get("/", getHome);
 
-app.get('/', getHome);
-app.get('/auth', function (req, res) {
-  const { token, expire, signature } = client.helper.getAuthenticationParameters();
-  res.send({ token, expire, signature, publicKey: process.env.IMAGEKIT_PUBLIC_KEY });
+app.get("/auth", (req, res) => {
+  try {
+    const authParams = client.getAuthenticationParameters();
+
+    res.json({
+      token: authParams.token,
+      expire: authParams.expire,
+      signature: authParams.signature,
+      publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+    });
+
+  } catch (error) {
+    console.log("Auth Error:", error);
+    res.status(500).json({ message: "Auth failed" });
+  }
 });
-app.get('/health', getHealth);
 
-app.post('/signup', postSignup);
-app.post('/login', postLogin);
+app.get("/health", getHealth);
 
-app.post('/tours', checkJWT, postTour);
-app.get('/tours', checkJWT, getTours);
-app.put('/tours/:id', checkJWT, putTours);
-app.get('/tours/:id', checkJWT, getTourById);
-app.delete('/tours/:id', checkJWT, deleteTour);
+// ================= AUTH =================
+
+app.post("/signup", postSignup);
+
+app.post("/login", postLogin);
+
+// ================= TOURS =================
+
+app.post("/tours", checkJWT, postTour);
+
+app.get("/tours", checkJWT, getTours);
+
+app.put("/tours/:id", checkJWT, putTours);
+
+app.get("/tours/:id", checkJWT, getTourById);
+
+app.delete("/tours/:id", checkJWT, deleteTour);
+
+// ================= WISHLIST =================
 
 app.post("/wishlist/:id", checkJWT, addToWishlist);
+
 app.delete("/wishlist/:id", checkJWT, removeFromWishlist);
+
 app.get("/wishlist", checkJWT, getWishlist);
 
-app.get('/user', checkJWT, getUser);
-app.put('/user', checkJWT, updateUser);
+// ================= USER =================
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
+app.get("/user", checkJWT, getUser);
+
+app.put("/user", checkJWT, updateUser);
+
+// ================= SERVER =================
+
+app.listen(PORT, async () => {
+
+  console.log(`Server running on port ${PORT}`);
+
+  await connectDB();
 
 });
