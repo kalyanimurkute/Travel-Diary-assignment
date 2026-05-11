@@ -13,10 +13,6 @@ import toast, {
 } from "react-hot-toast";
 
 import {
-  ImageKitAbortError,
-  ImageKitInvalidRequestError,
-  ImageKitServerError,
-  ImageKitUploadNetworkError,
   upload,
 } from "@imagekit/react";
 
@@ -44,33 +40,28 @@ function NewTour() {
 
   const fileInputRef = useRef();
 
-  // ================= AUTH =================
-
   const authenticator = async () => {
 
     try {
 
-      const res = await fetch(`${API_URL}/auth`);
+      const response = await fetch(
+        "http://localhost:8080/auth"
+      );
 
-      if (!res.ok) {
-        throw new Error("Auth failed");
+      if (!response.ok) {
+
+        throw new Error(
+          "Authentication failed"
+        );
       }
 
-      return await res.json();
+      return await response.json();
 
     } catch (error) {
 
-      console.error(error);
-
-      toast.error(
-        "Authentication Failed"
-      );
-
-      throw error;
+      console.log(error);
     }
   };
-
-  // ================= HANDLE UPLOAD =================
 
   const handleUpload = async () => {
 
@@ -91,32 +82,29 @@ function NewTour() {
 
     try {
 
-      const authParams = await authenticator();
-
-      if (!authParams.signature) {
-        toast.error("Auth failed");
-        return;
-      }
+      const authParams =
+        await authenticator();
 
       const {
-        signature,
-        expire,
         token,
-        publicKey,
+        expire,
+        signature,
       } = authParams;
 
       const uploadResponse =
         await upload({
 
-          expire,
-          token,
-          signature,
-          publicKey,
-
           file,
 
           fileName:
             file.name,
+
+          publicKey:
+            "public_lqOcFsn2armPiT7WxUVBW26UwAE=",
+
+          token,
+          expire,
+          signature,
 
           onProgress: (event) => {
 
@@ -150,52 +138,11 @@ function NewTour() {
 
       console.log(error);
 
-      if (
-        error instanceof
-        ImageKitAbortError
-      ) {
-
-        toast.error(
-          "Upload aborted"
-        );
-
-      } else if (
-        error instanceof
-        ImageKitInvalidRequestError
-      ) {
-
-        toast.error(
-          "Invalid request"
-        );
-
-      } else if (
-        error instanceof
-        ImageKitUploadNetworkError
-      ) {
-
-        toast.error(
-          "Network error"
-        );
-
-      } else if (
-        error instanceof
-        ImageKitServerError
-      ) {
-
-        toast.error(
-          "Server error"
-        );
-
-      } else {
-
-        toast.error(
-          "Upload failed"
-        );
-      }
+      toast.error(
+        "Upload failed"
+      );
     }
   };
-
-  // ================= ADD TOUR =================
 
   const addTour = async () => {
 
@@ -256,26 +203,9 @@ function NewTour() {
 
       console.error(error);
 
-      if (error.response) {
-
-        toast.error(
-          error.response.data.message
-        );
-
-      } else if (
-        error.request
-      ) {
-
-        toast.error(
-          "No response from server"
-        );
-
-      } else {
-
-        toast.error(
-          "Something went wrong"
-        );
-      }
+      toast.error(
+        "Something went wrong"
+      );
     }
   };
 
@@ -284,31 +214,23 @@ function NewTour() {
     <div
       className="
         min-h-screen
-
         bg-gradient-to-br
         from-[#FFECC0]
         via-[#fff4da]
         to-[#FFC29B]
-
         pb-10
       "
     >
 
       <Navbar />
 
-      {/* ================= TITLE ================= */}
-
       <h1
         className="
           text-center
           mt-10
-
           text-3xl
-
           playpen-sans
-
           text-[#B95E82]
-
           font-semibold
         "
       >
@@ -317,33 +239,21 @@ function NewTour() {
 
       </h1>
 
-      {/* ================= FORM ================= */}
-
       <div
         className="
           w-[90%]
           md:w-[500px]
-
           mx-auto
-
           mt-8
-
           bg-white/80
-
           backdrop-blur-md
-
           border
           border-[#FFC29B]
-
           rounded-3xl
-
           shadow-2xl
-
           p-8
         "
       >
-
-        {/* ================= TITLE ================= */}
 
         <Input
           type="text"
@@ -359,8 +269,6 @@ function NewTour() {
           }
         />
 
-        {/* ================= DESCRIPTION ================= */}
-
         <Input
           type="text"
           placeholder="Enter Description..."
@@ -374,8 +282,6 @@ function NewTour() {
             })
           }
         />
-
-        {/* ================= CITIES ================= */}
 
         <MultiSelect
           selectedItems={
@@ -407,8 +313,6 @@ function NewTour() {
             })
           }
         />
-
-        {/* ================= DATES ================= */}
 
         <div className="flex gap-3">
 
@@ -447,8 +351,6 @@ function NewTour() {
           />
 
         </div>
-
-        {/* ================= PHOTOS ================= */}
 
         <div
           className="
@@ -490,22 +392,15 @@ function NewTour() {
 
         </div>
 
-        {/* ================= FILE UPLOAD ================= */}
-
         <div
           className="
             mt-6
-
             border-2
             border-dashed
             border-[#F39F9F]
-
             bg-[#FFECC0]/50
-
             rounded-2xl
-
             p-6
-
             text-center
           "
         >
@@ -529,9 +424,7 @@ function NewTour() {
 
             className="
               cursor-pointer
-
               text-sm
-
               text-[#5A3444]
             "
 
@@ -546,8 +439,6 @@ function NewTour() {
             }}
           />
 
-          {/* ================= PROGRESS ================= */}
-
           {
             progress > 0 && (
 
@@ -557,11 +448,8 @@ function NewTour() {
                   className="
                     w-full
                     h-3
-
                     bg-[#FFECC0]
-
                     rounded-full
-
                     overflow-hidden
                   "
                 >
@@ -569,9 +457,7 @@ function NewTour() {
                   <div
                     className="
                       h-full
-
                       bg-[#B95E82]
-
                       transition-all
                     "
                     style={{
@@ -586,7 +472,6 @@ function NewTour() {
                   className="
                     text-sm
                     mt-2
-
                     text-[#B95E82]
                   "
                 >
@@ -604,8 +489,6 @@ function NewTour() {
           }
 
         </div>
-
-        {/* ================= BUTTON ================= */}
 
         <div className="mt-8 text-center">
 
