@@ -22,7 +22,6 @@ function Home() {
 
       <Navbar />
 
-      {/* ================= HERO SECTION ================= */}
 
       <div
         className="
@@ -36,27 +35,21 @@ function Home() {
         "
       >
 
-        {/* ================= HERO IMAGE ================= */}
 
         <img
           src={ImgHero}
           alt="home section image"
-
           className="
             w-[350px]
             md:w-[500px]
-
             mx-auto
-
             mt-10
-
             drop-shadow-2xl
 
-            animate-[float_4s_ease-in-out_infinite]
-          "
+            animate-[swing_5s_ease-in-out_infinite] "
+
         />
 
-        {/* ================= TITLE ================= */}
 
         <h1
           className="
@@ -79,7 +72,7 @@ function Home() {
 
         </h1>
 
-        {/* ================= DESCRIPTION ================= */}
+
 
         <p
           className="
@@ -106,7 +99,7 @@ function Home() {
 
         </p>
 
-        {/* ================= BUTTON ================= */}
+
 
         <div className="text-center mt-8">
 
@@ -127,7 +120,7 @@ function Home() {
 
       <Footer />
 
-      {/* ================= CUSTOM ANIMATION ================= */}
+
 
       <style>
 

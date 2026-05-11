@@ -14,7 +14,6 @@ function MultiSelect({
 
     <div className="mt-4">
 
-      {/* ================= SELECTED ITEMS ================= */}
 
       <div className="flex flex-wrap gap-2 mb-3">
 
@@ -67,7 +66,7 @@ function MultiSelect({
 
       </div>
 
-      {/* ================= INPUT ================= */}
+      
 
       <Input
         type="text"

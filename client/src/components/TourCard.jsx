@@ -36,7 +36,7 @@ function TourCard({
 
   const token = getuserJwtToken();
 
-  // ================= CHECK WISHLIST =================
+  
 
   useEffect(() => {
 
@@ -71,7 +71,6 @@ function TourCard({
 
   }, [_id, token]);
 
-  // ================= TOGGLE WISHLIST =================
 
   const toggleWishlist = async () => {
 
@@ -147,7 +146,7 @@ function TourCard({
       "
     >
 
-      {/* ================= WISHLIST ================= */}
+     
 
       <Heart
         onClick={toggleWishlist}
@@ -168,7 +167,7 @@ function TourCard({
         `}
       />
 
-      {/* ================= TITLE ================= */}
+   
 
       <h2
         className="
@@ -181,7 +180,7 @@ function TourCard({
         {title}
       </h2>
 
-      {/* ================= DESCRIPTION ================= */}
+     
 
       <p
         className="
@@ -194,7 +193,7 @@ function TourCard({
         {description}
       </p>
 
-      {/* ================= CITIES ================= */}
+     
 
       <div className="my-4 flex flex-wrap items-center gap-2">
 
@@ -226,7 +225,7 @@ function TourCard({
 
       </div>
 
-      {/* ================= DATES ================= */}
+   
 
       <div
         className="
@@ -268,7 +267,7 @@ function TourCard({
 
       </div>
 
-      {/* ================= USER ================= */}
+     
 
       <div className="flex items-center gap-3 mt-4">
 
@@ -287,7 +286,7 @@ function TourCard({
 
       </div>
 
-      {/* ================= PHOTOS ================= */}
+
 
       <div className="flex gap-3 mt-5 flex-wrap">
 
@@ -302,8 +301,6 @@ function TourCard({
         ))}
 
       </div>
-
-      {/* ================= ACTION BUTTONS ================= */}
 
       <div className="absolute top-4 right-16 flex gap-3">
 

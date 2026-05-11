@@ -11,7 +11,7 @@ function Wishlist() {
 
   const token = getuserJwtToken();
 
-  // ================= FETCH WISHLIST =================
+  
 
   const fetchWishlist = async () => {
 
@@ -46,7 +46,7 @@ function Wishlist() {
 
   }, []);
 
-  // ================= REMOVE FROM UI =================
+ 
 
   const handleRemoveFromWishlist = (id) => {
 
@@ -57,7 +57,7 @@ function Wishlist() {
     toast.success("Removed from wishlist");
   };
 
-  // ================= DELETE TOUR =================
+  
 
   const deleteTour = async (id) => {
 

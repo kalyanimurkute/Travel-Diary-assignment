@@ -7,7 +7,7 @@ function Button({
   variant = "primary",
 }) {
 
-  // ================= SIZE =================
+
 
   const SIZE_CLASSES = {
 
@@ -21,16 +21,11 @@ function Button({
       "px-7 py-3 text-lg",
   };
 
-  // ================= COLOR THEME =================
-  // Palette:
-  // #FFECC0
-  // #FFC29B
-  // #F39F9F
-  // #B95E82
+
 
   const VARIANT_CLASSES = {
 
-    // Main Rose Purple
+
 
     primary:
       `
@@ -39,8 +34,6 @@ function Button({
       hover:bg-[#a84f73]
       `,
 
-    // Soft Pink
-
     secondary:
       `
       bg-[#F39F9F]
@@ -48,7 +41,7 @@ function Button({
       hover:bg-[#eb8e8e]
       `,
 
-    // Peach Cream
+   
 
     tertiary:
       `

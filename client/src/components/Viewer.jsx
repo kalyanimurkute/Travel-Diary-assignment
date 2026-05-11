@@ -5,7 +5,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-// ================= PHOTO PREVIEW =================
+
 
 function PhotoPreview({
   imgUrl,
@@ -43,7 +43,6 @@ function PhotoPreview({
       onClick={handleBackdropClick}
     >
 
-      {/* ================= CLOSE BUTTON ================= */}
 
       <button
         onClick={onClose}
@@ -75,7 +74,7 @@ function PhotoPreview({
 
       </button>
 
-      {/* ================= IMAGE ================= */}
+  
 
       <img
         src={imgUrl}
@@ -102,7 +101,6 @@ function PhotoPreview({
   );
 }
 
-// ================= PHOTO VIEWER =================
 
 function PhotoViewer({
   imgUrl,
@@ -134,7 +132,7 @@ function PhotoViewer({
       "
     >
 
-      {/* ================= IMAGE ================= */}
+   
 
       <img
         key={index}
@@ -160,8 +158,7 @@ function PhotoViewer({
         onClick={() => setShowPreview(true)}
       />
 
-      {/* ================= DELETE BUTTON ================= */}
-
+  
       {
         showDelete && (
 
@@ -196,7 +193,7 @@ function PhotoViewer({
         )
       }
 
-      {/* ================= PREVIEW MODAL ================= */}
+      
 
       <PhotoPreview
         imgUrl={imgUrl}

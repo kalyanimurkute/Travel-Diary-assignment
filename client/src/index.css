@@ -14,3 +14,21 @@ body{
   font-optical-sizing: auto;
 
 }
+
+@keyframes swing {
+  0% {
+    transform: rotateY(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotateY(10deg) translateY(-10px);
+  }
+  50% {
+    transform: rotateY(0deg) translateY(0px);
+  }
+  75% {
+    transform: rotateY(-10deg) translateY(10px);
+  }
+  100% {
+    transform: rotateY(0deg) translateY(0px);
+  }
+}

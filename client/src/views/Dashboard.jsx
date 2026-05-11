@@ -29,7 +29,7 @@ function Dashboard() {
   const [tours, setTours] =
     useState([]);
 
-  // ================= DELETE TOUR =================
+  
 
   const deleteTour = async (id) => {
 
@@ -82,7 +82,6 @@ function Dashboard() {
     }
   };
 
-  // ================= LOAD TOURS =================
 
   const loadTours = async () => {
 
@@ -147,7 +146,7 @@ function Dashboard() {
 
       <Navbar />
 
-      {/* ================= MAIN SECTION ================= */}
+      
 
       <div
         className="
@@ -159,7 +158,7 @@ function Dashboard() {
         "
       >
 
-        {/* ================= TITLE ================= */}
+      
 
         <h2
           className="
@@ -181,7 +180,6 @@ function Dashboard() {
 
         </h2>
 
-        {/* ================= ADD TOUR BUTTON ================= */}
 
         <Link to="/tours/new">
 
@@ -225,7 +223,7 @@ function Dashboard() {
 
         </Link>
 
-        {/* ================= TOUR CARDS ================= */}
+        
 
         {
           tours.length > 0 ? (
