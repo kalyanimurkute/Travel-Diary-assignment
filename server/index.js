@@ -29,7 +29,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://travel-diary-assignment-1.onrender.com",
 }));
 
 app.use(express.json());
